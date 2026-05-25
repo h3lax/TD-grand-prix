@@ -1,0 +1,453 @@
+openapi: 3.0.3
+info:
+  title: F1 GP — API Réservation Tribunes
+  description: |
+    Contrat d'API pour le système de réservation de places en tribune d'un Grand Prix de Formule 1.
+
+    Ce document décrit l'API **attendue** dans le cadre du MSPR Quality Gate Challenge.
+    Vous pouvez vous en servir comme contrat de référence pour implémenter votre back-end,
+    et brancher dessus le frontend de démonstration sans rien modifier côté HTML.
+
+    Toutes les règles métier détaillées (calcul de prix, remboursement, éligibilité…)
+    sont précisées dans l'énoncé (`enonce.html` — section "Cahier des charges").
+  version: "1.0.0"
+servers:
+  - url: http://localhost:3000
+    description: Serveur de développement local (port libre à votre convenance)
+
+tags:
+  - name: Grandstands
+    description: Gestion des tribunes
+  - name: Sessions
+    description: Sessions du weekend de course (essais, qualifs, sprint, course)
+  - name: Spectators
+    description: Gestion des spectateurs (adhérents)
+  - name: Reservations
+    description: Réservations et annulations
+
+# ============================================================
+# PATHS
+# ============================================================
+paths:
+
+  # -------- Grandstands --------
+  /grandstands:
+    post:
+      tags: [Grandstands]
+      summary: Créer une tribune
+      description: Feature 1 du cahier des charges.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GrandstandInput'
+      responses:
+        '201':
+          description: Tribune créée
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Grandstand' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+    get:
+      tags: [Grandstands]
+      summary: Lister/filtrer les tribunes
+      description: Feature 2.
+      parameters:
+        - in: query
+          name: category
+          schema:
+            $ref: '#/components/schemas/Category'
+      responses:
+        '200':
+          description: Liste de tribunes
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Grandstand' }
+
+  # -------- Sessions --------
+  /sessions:
+    post:
+      tags: [Sessions]
+      summary: Créer une session
+      description: Feature 3. Si `priceMultiplier` est omis, valeur par défaut selon le type (PRACTICE 0.5, QUALIFYING 1.0, SPRINT 1.2, RACE 1.8).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionInput'
+      responses:
+        '201':
+          description: Session créée
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Session' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+    get:
+      tags: [Sessions]
+      summary: Lister les sessions
+      responses:
+        '200':
+          description: Liste de sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Session' }
+
+  # -------- Spectators --------
+  /spectators:
+    post:
+      tags: [Spectators]
+      summary: Inscrire un spectateur
+      description: |
+        Feature 4. Règle d'unicité &amp; validation appliquée : email valide unique, date de naissance dans le passé.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpectatorInput'
+      responses:
+        '201':
+          description: Spectateur inscrit
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Spectator' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Email déjà utilisé
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+    get:
+      tags: [Spectators]
+      summary: Lister les spectateurs
+      responses:
+        '200':
+          description: Liste de spectateurs
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Spectator' }
+
+  # -------- Reservations: Quote --------
+  /reservations/quote:
+    post:
+      tags: [Reservations]
+      summary: Simuler le prix d'une réservation (sans la créer)
+      description: |
+        Feature 5. Applique les règles tarifaires 1 à 5 sans consommer de places ni créer de réservation.
+
+        Comportement attendu :
+        - Calcul base = `basePrice × priceMultiplier × seatCount` sommé sur les sessions
+        - Si les 3 jours (FRIDAY+SATURDAY+SUNDAY) sont sélectionnés sur la même tribune → −20%
+        - Remise fidélité (SILVER −5%, GOLD −10%) cumulable après le pass weekend
+        - Tarif jeune : si spectateur < 16 ans → −50% sur le total
+
+        Le `spectatorId` est optionnel : sans lui, ni la fidélité ni le tarif jeune ne sont appliqués.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuoteRequest'
+      responses:
+        '200':
+          description: Détail du prix calculé
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Quote' }
+        '400':
+          description: Entrée invalide
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Tribune, session ou spectateur introuvable
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  # -------- Reservations: Create / List --------
+  /reservations:
+    post:
+      tags: [Reservations]
+      summary: Créer une réservation
+      description: |
+        Feature 6. Applique toutes les règles d'éligibilité dans l'ordre :
+        1. Validation entrées (entités existantes)
+        2. Max 6 places (règle 6)
+        3. Disponibilité sur chaque session (règle 7)
+        4. Calcul du prix via le moteur (règles 1-5)
+        5. Persistance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationRequest'
+      responses:
+        '201':
+          description: Réservation créée
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Reservation' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Spectateur, tribune ou session introuvable
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '409':
+          description: Conflit — places insuffisantes
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+    get:
+      tags: [Reservations]
+      summary: Lister les réservations
+      parameters:
+        - in: query
+          name: spectatorId
+          schema:
+            type: integer
+          description: Filtrer par spectateur
+      responses:
+        '200':
+          description: Liste de réservations
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Reservation' }
+
+  # -------- Reservations: Cancel --------
+  /reservations/{id}/cancel:
+    post:
+      tags: [Reservations]
+      summary: Annuler une réservation et calculer le remboursement
+      description: |
+        Feature 7. Calcule le remboursement selon la règle 8, à partir de la date de la
+        première session réservée :
+        - `> 7j` avant : 100% remboursé
+        - `< 7j` avant : 0%
+
+        Met à jour le statut à `CANCELLED` et libère les places sur les sessions concernées.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Réservation annulée
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CancelResult' }
+        '404':
+          description: Réservation introuvable
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '409':
+          description: Réservation déjà annulée
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+# ============================================================
+# COMPONENTS
+# ============================================================
+components:
+
+  responses:
+    BadRequest:
+      description: Données d'entrée invalides
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+
+    # --- Enums ---
+    Category:
+      type: string
+      enum: [BRONZE, SILVER, GOLD, PLATINUM]
+    Day:
+      type: string
+      enum: [FRIDAY, SATURDAY, SUNDAY]
+    SessionType:
+      type: string
+      enum: [PRACTICE, QUALIFYING, SPRINT, RACE]
+    LoyaltyTier:
+      type: string
+      enum: [NONE, SILVER, GOLD]
+    ReservationStatus:
+      type: string
+      enum: [CONFIRMED, CANCELLED]
+
+    # --- Grandstand ---
+    GrandstandInput:
+      type: object
+      required: [name, location, category, capacity, basePrice]
+      properties:
+        name: { type: string, example: "Tribune Sainte-Beaume" }
+        location: { type: string, example: "Virage 3" }
+        category: { $ref: '#/components/schemas/Category' }
+        capacity: { type: integer, minimum: 1, example: 200 }
+        basePrice: { type: number, format: float, minimum: 0.01, example: 180 }
+        covered: { type: boolean, default: false }
+
+    Grandstand:
+      allOf:
+        - $ref: '#/components/schemas/GrandstandInput'
+        - type: object
+          required: [id]
+          properties:
+            id: { type: integer, example: 1 }
+
+    # --- Session ---
+    SessionInput:
+      type: object
+      required: [day, type, date]
+      properties:
+        day: { $ref: '#/components/schemas/Day' }
+        type: { $ref: '#/components/schemas/SessionType' }
+        date: { type: string, format: date-time, example: "2026-07-19T14:00:00Z" }
+        priceMultiplier:
+          type: number
+          format: float
+          minimum: 0.01
+          description: Optionnel — valeur par défaut selon le type si omise
+          example: 1.8
+
+    Session:
+      type: object
+      required: [id, day, type, date, priceMultiplier]
+      properties:
+        id: { type: integer, example: 1 }
+        day: { $ref: '#/components/schemas/Day' }
+        type: { $ref: '#/components/schemas/SessionType' }
+        date: { type: string, format: date-time }
+        priceMultiplier: { type: number, format: float, example: 1.8 }
+
+    # --- Spectator ---
+    SpectatorInput:
+      type: object
+      required: [name, email, birthDate]
+      properties:
+        name: { type: string, example: "Alice Martin" }
+        email: { type: string, format: email, example: "alice@example.com" }
+        birthDate: { type: string, format: date, example: "1990-04-12" }
+        loyaltyTier:
+          allOf:
+            - $ref: '#/components/schemas/LoyaltyTier'
+          default: NONE
+
+    Spectator:
+      allOf:
+        - $ref: '#/components/schemas/SpectatorInput'
+        - type: object
+          required: [id, createdAt]
+          properties:
+            id: { type: integer, example: 1 }
+            createdAt: { type: string, format: date-time }
+
+    # --- Quote ---
+    QuoteRequest:
+      type: object
+      required: [grandstandId, sessionIds, seatCount]
+      properties:
+        grandstandId: { type: integer, example: 1 }
+        sessionIds:
+          type: array
+          items: { type: integer }
+          minItems: 1
+          example: [1, 2, 3]
+        seatCount: { type: integer, minimum: 1, maximum: 6, example: 2 }
+        spectatorId:
+          type: integer
+          description: Optionnel — sans, ni fidélité ni tarif jeune appliqués
+          example: 1
+
+    Quote:
+      type: object
+      required: [lineItems, baseTotal, isWeekendPass, total]
+      properties:
+        lineItems:
+          type: array
+          items:
+            type: object
+            properties:
+              sessionId: { type: integer }
+              sessionLabel: { type: string, example: "SUNDAY — RACE" }
+              unitPrice: { type: number, format: float }
+              subtotal: { type: number, format: float }
+        baseTotal: { type: number, format: float, example: 1296 }
+        weekendDiscount: { type: number, format: float, example: 259.2 }
+        isWeekendPass: { type: boolean, example: true }
+        loyaltyTier: { $ref: '#/components/schemas/LoyaltyTier' }
+        loyaltyDiscount: { type: number, format: float, example: 103.68 }
+        youthDiscount: { type: number, format: float, example: 0 }
+        total: { type: number, format: float, example: 933.12 }
+
+    # --- Reservation ---
+    ReservationRequest:
+      type: object
+      required: [spectatorId, grandstandId, sessionIds, seatCount]
+      properties:
+        spectatorId: { type: integer, example: 1 }
+        grandstandId: { type: integer, example: 1 }
+        sessionIds:
+          type: array
+          items: { type: integer }
+          minItems: 1
+          example: [1, 2, 3]
+        seatCount: { type: integer, minimum: 1, maximum: 6, example: 2 }
+
+    Reservation:
+      type: object
+      required: [id, spectatorId, grandstandId, sessionIds, seatCount, totalPrice, status, bookedAt]
+      properties:
+        id: { type: integer, example: 42 }
+        spectatorId: { type: integer }
+        grandstandId: { type: integer }
+        sessionIds:
+          type: array
+          items: { type: integer }
+        seatCount: { type: integer }
+        totalPrice: { type: number, format: float }
+        status: { $ref: '#/components/schemas/ReservationStatus' }
+        bookedAt: { type: string, format: date-time }
+        cancelledAt: { type: string, format: date-time, nullable: true }
+        refundedAmount: { type: number, format: float, default: 0 }
+
+    CancelResult:
+      type: object
+      properties:
+        reservation: { $ref: '#/components/schemas/Reservation' }
+        refund: { type: number, format: float, example: 933.12 }
+        rate: { type: number, format: float, enum: [0, 1.0], example: 1.0 }
+        daysUntilFirstSession: { type: integer, example: 15 }
+
+    # --- Error ---
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          example: "Pas assez de places sur la session SUNDAY — RACE"

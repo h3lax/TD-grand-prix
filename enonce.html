@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MSPR — Quality Gate Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;700&display=swap');
+
+        body { font-family: 'Inter', sans-serif; }
+        .code-font { font-family: 'JetBrains Mono', monospace; }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        .nav-link { transition: color 0.2s; }
+        .nav-link:hover { color: #60a5fa; }
+
+        .box-objectif { border-left: 4px solid #3b82f6; background-color: #eff6ff; }
+        .box-concept { border-left: 4px solid #8b5cf6; background-color: #faf5ff; }
+        .box-tache { border-left: 4px solid #0ea5e9; background-color: #f0f9ff; }
+        .box-validation { border-left: 4px solid #10b981; background-color: #ecfdf5; }
+        .box-reflexion { border-left: 4px solid #f59e0b; background-color: #fffbeb; }
+        .box-warning { border-left: 4px solid #ef4444; background-color: #fef2f2; }
+        .box-indice { border-left: 4px solid #64748b; background-color: #f8fafc; }
+        .box-tip { border-left: 4px solid #06b6d4; background-color: #ecfeff; }
+
+        .section-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 3rem; height: 3rem; border-radius: 9999px;
+            font-size: 1.5rem; font-weight: 700; color: white;
+            flex-shrink: 0; margin-right: 1rem;
+        }
+
+        details summary { cursor: pointer; user-select: none; }
+        details summary::-webkit-details-marker { display: none; }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800 flex flex-col min-h-screen">
+
+    <!-- HEADER -->
+    <header class="bg-slate-900 text-white shadow-xl sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto p-4 lg:p-5">
+            <div class="flex items-center gap-3 mb-3">
+                <svg class="w-8 h-8 text-emerald-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                </svg>
+                <div>
+                    <h1 class="text-2xl font-bold">MSPR — Quality Gate Challenge</h1>
+                    <p class="text-xs text-slate-300 mt-1">Analyse de code &amp; Maintenabilité — Évaluation en binôme</p>
+                </div>
+            </div>
+            <nav class="flex space-x-4 text-xs font-semibold overflow-x-auto pb-1 whitespace-nowrap">
+                <a href="#intro" class="nav-link text-slate-300">0. Contexte</a>
+                <a href="#cdc" class="nav-link text-pink-400">Cahier des charges</a>
+                <a href="#contraintes" class="nav-link text-amber-400">Contraintes</a>
+                <a href="#methode" class="nav-link text-purple-400">Méthode</a>
+                <a href="#phases" class="nav-link text-blue-400">Démarche</a>
+                <a href="#livrables" class="nav-link text-violet-400">Livrables</a>
+                <a href="#bareme" class="nav-link text-orange-400">Barème</a>
+                <a href="#bonus" class="nav-link text-yellow-400">Pour aller plus loin</a>
+                <a href="#annexe" class="nav-link text-slate-400">Annexe</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto p-4 lg:p-6 mt-4 flex-grow space-y-16">
+
+        <!-- ============================================================ -->
+        <!-- INTRODUCTION                                                  -->
+        <!-- ============================================================ -->
+        <section id="intro" class="scroll-mt-32">
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6 mb-6">
+                <h2 class="text-2xl font-bold text-slate-800 mb-3">
+                    <i class="fa-solid fa-circle-info mr-2 text-blue-500"></i>Contexte &amp; mission
+                </h2>
+                <p class="text-gray-700 mb-3">Vous êtes en binôme et venez d'être affectés à un nouveau projet
+                    pour le compte d'un client fictif : <strong>l'Automobile Club de Castellet</strong>,
+                    organisateur d'un <strong>Grand Prix de Formule 1</strong>. Il leur faut un système de réservation
+                    de places en tribune pour le weekend de course. Le CTO a été clair :</p>
+                <blockquote class="border-l-4 border-blue-400 pl-4 italic text-slate-700 my-4">
+                    « On a déjà donné dans le code qui marche mais qu'on ne peut pas maintenir.
+                    Cette fois, je veux un livrable qui passe le <strong>Quality Gate Sonar Way par défaut</strong>
+                    avant tout déploiement. Sinon, on ne le déploie pas. »
+                </blockquote>
+                <p class="text-gray-700">Votre mission : démarrer un projet <strong>from scratch</strong>,
+                    implémenter le cahier des charges fonctionnel ci-dessous, et faire en sorte que la qualité
+                    soit pilotée par Sonar <strong>dès le premier commit</strong>, pas en toute fin de parcours.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mt-6">
+                    <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                        <div class="font-bold text-slate-700 mb-1"><i class="fa-solid fa-users mr-1 text-blue-500"></i>Format</div>
+                        <ul class="text-slate-600 space-y-1">
+                            <li>• Travail en binôme (libre)</li>
+                            <li>• Réalisation en autonomie</li>
+                            <li>• Rendu : <strong>vendredi 23h59</strong></li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                        <div class="font-bold text-slate-700 mb-1"><i class="fa-solid fa-code mr-1 text-purple-500"></i>Stack</div>
+                        <ul class="text-slate-600 space-y-1">
+                            <li>• Langage <strong>libre</strong> mais Sonar-compatible</li>
+                            <li>• Java, Python, JS/TS, C#, Go, Kotlin… au choix</li>
+                            <li>• SonarQube Community local (Docker)</li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                        <div class="font-bold text-slate-700 mb-1"><i class="fa-solid fa-trophy mr-1 text-green-500"></i>Critère de victoire</div>
+                        <ul class="text-slate-600 space-y-1">
+                            <li>• Quality Gate <strong>Sonar Way</strong> = <span class="text-emerald-700 font-bold">Passed</span></li>
+                            <li>• Cahier des charges 100% couvert</li>
+                            <li>• Rapport final</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="box-objectif p-5 rounded-xl shadow-sm">
+                <h3 class="font-bold text-blue-900 mb-2"><i class="fa-solid fa-bullseye mr-2"></i>Objectifs pédagogiques évalués</h3>
+                <ul class="text-sm text-blue-900 list-disc list-inside space-y-1">
+                    <li>Concevoir une petite application en intégrant la qualité <strong>dès la conception</strong> (Clean as You Code).</li>
+                    <li>Mettre en place et exploiter une plateforme d'analyse continue (SonarQube + intégration projet).</li>
+                    <li>Interpréter en temps réel les métriques de maintenabilité et corriger au fil de l'eau.</li>
+                    <li>Écrire un code testé : 80% de couverture exigés sur l'ensemble du code produit.</li>
+                    <li>Produire un livrable professionnel : code + tests + rapport synthétique.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- CAHIER DES CHARGES                                            -->
+        <!-- ============================================================ -->
+        <section id="cdc" class="scroll-mt-32 border-t pt-10">
+            <div class="flex items-center mb-6">
+                <span class="section-badge bg-pink-600"><i class="fa-solid fa-flag-checkered"></i></span>
+                <h2 class="text-3xl font-bold text-slate-800">Cahier des charges — Réservation GP F1</h2>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6 mb-6">
+                <p class="text-sm text-slate-700 mb-3">
+                    Vous développez le <strong>back-end (API REST ou CLI)</strong> d'un système de réservation
+                    de places en tribune pour un Grand Prix de Formule 1. Le weekend de course s'étale
+                    sur <strong>3 jours</strong> (essais libres vendredi, qualifications samedi, course dimanche)
+                    avec plusieurs tribunes autour du circuit, chacune ayant sa propre catégorie tarifaire.
+                </p>
+                <p class="text-sm text-slate-700">
+                    Le système doit gérer le catalogue (tribunes + sessions), les spectateurs, et le cycle
+                    de <strong>réservation / annulation</strong> avec calcul tarifaire et règles d'éligibilité.
+                    <strong>Pas de front-end requis</strong> — votre interface est l'API (ou la ligne de commande).
+                </p>
+            </div>
+
+            <!-- Entités -->
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6 mb-6">
+                <h3 class="text-lg font-bold text-slate-800 mb-4"><i class="fa-solid fa-database mr-2 text-pink-500"></i>Entités métier (minimum)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div class="bg-pink-50 border border-pink-200 rounded-lg p-4">
+                        <div class="font-bold text-pink-900 mb-2">Grandstand (Tribune)</div>
+                        <ul class="text-pink-900 space-y-1 list-disc list-inside">
+                            <li>id, nom (ex : "Tribune Sainte-Beaume"), localisation (ex : "Virage 3")</li>
+                            <li>catégorie : <code class="code-font">BRONZE</code> / <code class="code-font">SILVER</code> / <code class="code-font">GOLD</code> / <code class="code-font">PLATINUM</code></li>
+                            <li>capacité totale (nombre de sièges)</li>
+                            <li>prix de base par siège (€) — propre à la tribune</li>
+                            <li>couverte : oui/non</li>
+                        </ul>
+                    </div>
+                    <div class="bg-pink-50 border border-pink-200 rounded-lg p-4">
+                        <div class="font-bold text-pink-900 mb-2">Session</div>
+                        <ul class="text-pink-900 space-y-1 list-disc list-inside">
+                            <li>id, jour (<code class="code-font">FRIDAY</code> / <code class="code-font">SATURDAY</code> / <code class="code-font">SUNDAY</code>), date</li>
+                            <li>type : <code class="code-font">PRACTICE</code> / <code class="code-font">QUALIFYING</code> / <code class="code-font">SPRINT</code> / <code class="code-font">RACE</code></li>
+                            <li>multiplicateur de prix appliqué à la tribune</li>
+                        </ul>
+                    </div>
+                    <div class="bg-pink-50 border border-pink-200 rounded-lg p-4">
+                        <div class="font-bold text-pink-900 mb-2">Spectator (Spectateur)</div>
+                        <ul class="text-pink-900 space-y-1 list-disc list-inside">
+                            <li>id, nom, email, date de naissance</li>
+                            <li>programme fidélité : <code class="code-font">NONE</code> / <code class="code-font">SILVER</code> / <code class="code-font">GOLD</code></li>
+                            <li>date d'inscription</li>
+                        </ul>
+                    </div>
+                    <div class="bg-pink-50 border border-pink-200 rounded-lg p-4">
+                        <div class="font-bold text-pink-900 mb-2">Reservation</div>
+                        <ul class="text-pink-900 space-y-1 list-disc list-inside">
+                            <li>id, spectatorId, grandstandId, sessionIds[]</li>
+                            <li>nombre de places, prix total calculé (€)</li>
+                            <li>statut : <code class="code-font">CONFIRMED</code> / <code class="code-font">CANCELLED</code></li>
+                            <li>date de réservation, date d'annulation (nullable), montant remboursé (€)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Endpoints / Fonctionnalités -->
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6 mb-6">
+                <h3 class="text-lg font-bold text-slate-800 mb-4"><i class="fa-solid fa-list mr-2 text-pink-500"></i>Fonctionnalités obligatoires (7)</h3>
+                <table class="w-full text-xs border-collapse">
+                    <thead class="bg-slate-100">
+                        <tr>
+                            <th class="p-2 border border-slate-200 text-left">#</th>
+                            <th class="p-2 border border-slate-200 text-left">Action métier</th>
+                            <th class="p-2 border border-slate-200 text-left">Endpoint REST (exemple) / commande CLI</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-slate-700">
+                        <tr><td class="p-2 border border-slate-200">1</td><td class="p-2 border border-slate-200">Créer une tribune</td><td class="p-2 border border-slate-200"><code class="code-font">POST /grandstands</code></td></tr>
+                        <tr class="bg-slate-50"><td class="p-2 border border-slate-200">2</td><td class="p-2 border border-slate-200">Lister/filtrer les tribunes (par catégorie)</td><td class="p-2 border border-slate-200"><code class="code-font">GET /grandstands?category=</code></td></tr>
+                        <tr><td class="p-2 border border-slate-200">3</td><td class="p-2 border border-slate-200">Créer une session (jour + type + multiplicateur)</td><td class="p-2 border border-slate-200"><code class="code-font">POST /sessions</code></td></tr>
+                        <tr class="bg-slate-50"><td class="p-2 border border-slate-200">4</td><td class="p-2 border border-slate-200">Inscrire un spectateur</td><td class="p-2 border border-slate-200"><code class="code-font">POST /spectators</code></td></tr>
+                        <tr><td class="p-2 border border-slate-200">5</td><td class="p-2 border border-slate-200">Simuler le prix d'une réservation (sans la créer)</td><td class="p-2 border border-slate-200"><code class="code-font">POST /reservations/quote</code></td></tr>
+                        <tr class="bg-slate-50"><td class="p-2 border border-slate-200">6</td><td class="p-2 border border-slate-200">Créer une réservation (applique toutes les règles de prix &amp; éligibilité)</td><td class="p-2 border border-slate-200"><code class="code-font">POST /reservations</code></td></tr>
+                        <tr><td class="p-2 border border-slate-200">7</td><td class="p-2 border border-slate-200">Annuler une réservation (calcule le remboursement)</td><td class="p-2 border border-slate-200"><code class="code-font">POST /reservations/{id}/cancel</code></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Règles métier -->
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6 mb-6">
+                <h3 class="text-lg font-bold text-slate-800 mb-4"><i class="fa-solid fa-scale-balanced mr-2 text-pink-500"></i>Règles métier (toutes obligatoires)</h3>
+                <ol class="text-sm text-slate-700 space-y-2 list-decimal list-inside">
+                    <li><strong>Calcul du prix de base :</strong> <code class="code-font">prix_tribune × multiplicateur_session × nb_places</code>, sommé sur toutes les sessions de la réservation.</li>
+                    <li><strong>Multiplicateurs par défaut :</strong> PRACTICE = ×0.5, QUALIFYING = ×1.0, SPRINT = ×1.2, RACE = ×1.8.</li>
+                    <li><strong>Pass weekend :</strong> si la réservation couvre les 3 jours (FRIDAY + SATURDAY + SUNDAY) sur la même tribune → remise de <strong>20%</strong>.</li>
+                    <li><strong>Programme fidélité :</strong> remise additionnelle (cumulable après le pass weekend) — SILVER = <strong>5%</strong>, GOLD = <strong>10%</strong>.</li>
+                    <li><strong>Tarif jeune :</strong> spectateur de moins de 16 ans → <strong>−50%</strong> sur le total.</li>
+                    <li><strong>Limite par réservation :</strong> maximum <strong>6 places</strong> par réservation.</li>
+                    <li><strong>Disponibilité :</strong> on ne peut réserver que si <code class="code-font">places_libres ≥ nb_places_demandées</code> sur <strong>chaque session</strong> de la tribune visée.</li>
+                    <li><strong>Politique d'annulation :</strong> remboursement calculé à partir de la date de la <em>première</em> session réservée —
+                        <ul class="ml-6 mt-1 list-disc text-slate-700">
+                            <li>&gt; 7 jours avant : <strong>100%</strong> remboursé</li>
+                            <li>&lt; 7 jours : <strong>0%</strong></li>
+                        </ul>
+                    </li>
+                    <li><strong>Unicité &amp; validation :</strong> email unique chez les spectateurs, format email valide, date de naissance &lt; date du jour, multiplicateur de session &gt; 0.</li>
+                </ol>
+                <div class="box-reflexion p-3 rounded-lg text-xs mt-4">
+                    <strong>Note :</strong> ces règles sont volontairement croisées (type session × âge × fidélité × pass weekend)
+                    pour produire de la complexité métier — donc de la matière à structurer proprement, à tester unitairement
+                    et à factoriser pour éviter les god functions.
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- CONTRAINTES TECHNIQUES                                        -->
+        <!-- ============================================================ -->
+        <section id="contraintes" class="scroll-mt-32 border-t pt-10">
+            <div class="flex items-center mb-6">
+                <span class="section-badge bg-amber-500"><i class="fa-solid fa-screwdriver-wrench"></i></span>
+                <h2 class="text-3xl font-bold text-slate-800">Contraintes techniques</h2>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 p-5">
+                <h4 class="font-bold text-slate-800 mb-3"><i class="fa-solid fa-code mr-2 text-amber-500"></i>Stack &amp; outils</h4>
+                <ul class="text-sm text-slate-700 space-y-2 list-disc list-inside">
+                    <li>Langage : <strong>au choix</strong> parmi ceux supportés par Sonar Way (Java, Python, JS/TS, C#, Go, Kotlin, PHP…).</li>
+                    <li>Build &amp; dépendances : <strong>obligatoire</strong> (Maven/Gradle, pip+requirements, npm, dotnet, etc.).</li>
+                    <li>Persistance : au choix (BDD embarquée H2/SQLite, fichier JSON, in-memory…).</li>
+                    <li>Framework de tests adapté au langage (JUnit, pytest, Jest, xUnit…).</li>
+                    <li>Outil de couverture compatible Sonar (JaCoCo, coverage.py, Istanbul, dotCover…).</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- MÉTHODE                                                       -->
+        <!-- ============================================================ -->
+        <section id="methode" class="scroll-mt-32 border-t pt-10">
+            <div class="flex items-center mb-6">
+                <span class="section-badge bg-purple-600"><i class="fa-solid fa-route"></i></span>
+                <h2 class="text-3xl font-bold text-slate-800">Méthode imposée — "Sonar dès le premier commit"</h2>
+            </div>
+
+            <div class="box-concept p-5 rounded-xl shadow-sm mb-6">
+                <h3 class="font-bold text-purple-900 mb-3"><i class="fa-solid fa-graduation-cap mr-2"></i>Principe : Clean as You Code, pas Clean at the End</h3>
+                <p class="text-sm text-purple-900 mb-3">
+                    L'erreur classique consiste à tout coder d'abord, puis à brancher Sonar à la fin et à éteindre des incendies dans l'urgence.
+                    Ici on fait l'inverse : <strong>vous configurez Sonar avant d'écrire la première ligne métier</strong>,
+                    et vous rescannez régulièrement pour piloter la qualité en continu.
+                </p>
+                <p class="text-sm text-purple-900">
+                    Concrètement, votre boucle de travail tient en 5 étapes répétées :
+                </p>
+                <ol class="text-sm text-purple-900 space-y-1 list-decimal list-inside mt-2">
+                    <li>Je code une feature (ou un morceau).</li>
+                    <li>J'écris ses tests <strong>dans le même commit</strong>.</li>
+                    <li>Je commit avec un message clair.</li>
+                    <li>Je rescanne avec Sonar régulièrement.</li>
+                    <li>Si une issue apparaît, je la corrige <strong>immédiatement</strong>, avant la feature suivante.</li>
+                </ol>
+            </div>
+
+            <div class="box-tip p-4 rounded-xl shadow-sm">
+                <h4 class="font-bold text-cyan-900 mb-2"><i class="fa-solid fa-lightbulb mr-2"></i>Pourquoi cette discipline ?</h4>
+                <p class="text-sm text-cyan-900">
+                    Le Quality Gate Sonar Way <strong>ne juge que le code nouveau ou modifié</strong>.
+                    Si vous laissez s'accumuler les issues, vous aurez à les corriger toutes d'un coup dans l'urgence.
+                    En corrigeant au fur et à mesure, vous n'avez jamais plus de 2-3 issues à traiter à la fois.
+                </p>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- DÉMARCHE                                                      -->
+        <!-- ============================================================ -->
+        <section id="phases" class="scroll-mt-32 border-t pt-10">
+            <div class="flex items-center mb-6">
+                <span class="section-badge bg-blue-600"><i class="fa-solid fa-route"></i></span>
+                <h2 class="text-3xl font-bold text-slate-800">Démarche de travail recommandée</h2>
+            </div>
+
+            <!-- Étape 0 -->
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6 mb-6">
+                <h3 class="text-lg font-bold text-slate-800 mb-2">
+                    <span class="inline-block bg-slate-700 text-white text-xs px-2 py-1 rounded mr-2">Étape 0</span>
+                    Setup &amp; scaffold
+                </h3>
+                <ul class="text-sm text-slate-700 list-disc list-inside space-y-1 mt-3">
+                    <li>Créer le dépôt Git (un par binôme), branche <code class="code-font">main</code>.</li>
+                    <li>Initialiser le projet vide (<code class="code-font">spring init</code>, <code class="code-font">npm init</code>…), commit du scaffold.</li>
+                    <li>Démarrer SonarQube local, créer le projet <code class="code-font">f1-binome-XX</code>, générer un token.</li>
+                    <li>Configurer l'outil de coverage adapté au langage.</li>
+                    <li><strong>Définir le "New Code"</strong> sur <em>Number of days = 1</em> AVANT le premier scan
+                        (sinon le gate sera trivialement vert).</li>
+                </ul>
+            </div>
+
+            <!-- Étape 1 -->
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6 mb-6">
+                <h3 class="text-lg font-bold text-slate-800 mb-2">
+                    <span class="inline-block bg-blue-600 text-white text-xs px-2 py-1 rounded mr-2">Étape 1</span>
+                    Premier scan + design rapide
+                </h3>
+                <ul class="text-sm text-slate-700 list-disc list-inside space-y-1 mt-3">
+                    <li>Lancer un scan Sonar sur le scaffold vide → vous devez obtenir le badge <strong>Passed</strong> (0 LOC, 0 issue).</li>
+                    <li>Décider à deux du découpage : packages/dossiers, séparation controller/service/repository, modèle de données.</li>
+                    <li>Esquisser sur papier ou sur un fichier <code class="code-font">DESIGN.md</code> les signatures des principales méthodes métier (calcul du prix, application des remises, vérification de disponibilité, calcul du remboursement).</li>
+                    <li>Consulter le contrat d'API de référence (<code class="code-font">openapi.yaml</code> ou <code class="code-font">swagger.html</code> dans le dossier de l'évaluation) pour aligner vos formats de requête/réponse.</li>
+                </ul>
+
+                <!-- Répartition du travail -->
+                <div class="box-concept p-4 rounded-lg mt-4">
+                    <h4 class="font-bold text-purple-900 text-sm mb-2"><i class="fa-solid fa-people-arrows mr-2"></i>Comment se répartir le travail en binôme</h4>
+                    <p class="text-xs text-purple-900 mb-2">
+                        Plusieurs stratégies possibles. Choisissez celle qui colle à vos forces respectives,
+                        mais <strong>évitez de vous découper "moitié features chacun"</strong> sans coordination :
+                        vous allez créer des conflits Git et casser la cohérence du moteur de prix.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-3">
+
+                        <div class="bg-white rounded p-3 border border-purple-200">
+                            <div class="font-bold text-purple-800 text-xs mb-1">Option 1 — Par couche</div>
+                            <ul class="text-xs text-slate-700 list-disc list-inside space-y-0.5">
+                                <li><strong>Dev 1</strong> : services métier (phase C moteur de prix, phase E remboursement) + tests unitaires associés</li>
+                                <li><strong>Dev 2</strong> : controllers / endpoints + persistance + tests d'intégration</li>
+                            </ul>
+                            <p class="text-xs text-slate-500 mt-1 italic">Idéal si l'un est plus fort en logique métier, l'autre en API/infra.</p>
+                        </div>
+
+                        <div class="bg-white rounded p-3 border border-purple-200">
+                            <div class="font-bold text-purple-800 text-xs mb-1">Option 2 — Par domaine</div>
+                            <ul class="text-xs text-slate-700 list-disc list-inside space-y-0.5">
+                                <li><strong>Dev 1</strong> : catalogue (tribunes + sessions + spectateurs — phase B)</li>
+                                <li><strong>Dev 2</strong> : transactions (moteur de prix + réservation + annulation — phases C + D + E)</li>
+                            </ul>
+                            <p class="text-xs text-slate-500 mt-1 italic">Chacun a sa "verticale" propre. Bon pour minimiser les conflits Git.</p>
+                        </div>
+
+                        <div class="bg-white rounded p-3 border border-purple-200">
+                            <div class="font-bold text-purple-800 text-xs mb-1">Option 3 — Pair / Switch</div>
+                            <ul class="text-xs text-slate-700 list-disc list-inside space-y-0.5">
+                                <li>Phases A et B faites en <strong>pair-programming</strong> (un clavier, l'autre revue)</li>
+                                <li>À partir de la phase C, l'un code la feature, l'autre écrit ses tests, puis on inverse</li>
+                            </ul>
+                            <p class="text-xs text-slate-500 mt-1 italic">Plus lent en LOC/h mais qualité supérieure et apprentissage croisé.</p>
+                        </div>
+                    </div>
+
+                    <p class="text-xs text-purple-900 mt-3">
+                        <strong>Quelle que soit l'option choisie :</strong> nommez un référent qualité (celui qui surveille
+                        le dashboard Sonar et alerte le binôme dès qu'une issue apparaît), et un référent Git
+                        (celui qui orchestre les merges, résout les conflits, garde un historique propre).
+                        Ces deux rôles peuvent être portés par la même personne, ou tourner à chaque phase.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Étape 2 -->
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6 mb-6">
+                <h3 class="text-lg font-bold text-slate-800 mb-2">
+                    <span class="inline-block bg-purple-600 text-white text-xs px-2 py-1 rounded mr-2">Étape 2</span>
+                    Implémentation itérative (cœur du devoir)
+                </h3>
+                <p class="text-sm text-slate-700 mt-2 mb-4">
+                    Appliquer la <strong>boucle de la section "Méthode"</strong>.
+                    L'ordre conseillé ci-dessous suit une logique de dépendances :
+                    on valide les fondations avant la logique métier, on isole le moteur de prix
+                    (le morceau le plus testable) avant de le brancher au reste, et on ne touche aux statistiques
+                    qu'une fois qu'il y a des données à agréger.
+                </p>
+
+                <!-- Phase A -->
+                <div class="border-l-4 border-purple-300 pl-4 mb-4">
+                    <h4 class="font-bold text-slate-800 text-sm">
+                        <span class="inline-block bg-purple-100 text-purple-900 text-xs px-2 py-0.5 rounded font-bold mr-2">A</span>
+                        Fondations
+                    </h4>
+                    <div class="text-xs text-slate-700 mt-1 space-y-1">
+                        <p><strong>Ce que vous faites :</strong> classes/structs des 4 entités (Grandstand, Session, Spectator, Reservation) ; couche de persistance en mémoire (Map / Dict par entité, compteurs d'ID) ; helpers réutilisables (validation email, calcul d'âge à partir d'une date de naissance, comparaison de dates).</p>
+                        <p><strong>À tester :</strong> les helpers — surtout le calcul d'âge sur des cas limites (anniversaire à venir / passé, leap year) et la validation email.</p>
+                        <p class="italic text-slate-500"><i class="fa-solid fa-arrow-right mr-1"></i>Pourquoi en premier : socle de tout le reste, et le code des helpers est pur (zéro dépendance) donc facile à tester proprement dès le départ.</p>
+                    </div>
+                </div>
+
+                <!-- Phase B -->
+                <div class="border-l-4 border-purple-400 pl-4 mb-4">
+                    <h4 class="font-bold text-slate-800 text-sm">
+                        <span class="inline-block bg-purple-100 text-purple-900 text-xs px-2 py-0.5 rounded font-bold mr-2">B</span>
+                        CRUD plat (features 1 à 4)
+                    </h4>
+                    <div class="text-xs text-slate-700 mt-1 space-y-1">
+                        <p><strong>Ce que vous faites :</strong></p>
+                        <ul class="list-disc list-inside ml-2 space-y-0.5">
+                            <li>POST + GET tribunes (feature 1, 2) avec filtres <code class="code-font">category</code> et <code class="code-font">covered</code></li>
+                            <li>POST + GET sessions (feature 3) avec multiplicateur par défaut selon le type</li>
+                            <li>POST + GET spectateurs (feature 4) avec unicité email et validation date de naissance</li>
+                        </ul>
+                        <p><strong>À tester :</strong> chaque endpoint en happy path + au moins 2 cas d'erreur de validation (champ manquant, format invalide, doublon email).</p>
+                        <p class="italic text-slate-500"><i class="fa-solid fa-arrow-right mr-1"></i>Pourquoi maintenant : sans données en base, rien à tester en aval. Cette phase consolide aussi votre architecture en couches (controller → service → repository).</p>
+                    </div>
+                </div>
+
+                <!-- Phase C -->
+                <div class="border-l-4 border-purple-500 pl-4 mb-4">
+                    <h4 class="font-bold text-slate-800 text-sm">
+                        <span class="inline-block bg-purple-200 text-purple-900 text-xs px-2 py-0.5 rounded font-bold mr-2">C</span>
+                        Moteur de prix (feature 5) — le cœur testable
+                    </h4>
+                    <div class="text-xs text-slate-700 mt-1 space-y-1">
+                        <p><strong>Ce que vous faites :</strong> un <strong>service dédié</strong> qui prend en entrée (tribune, sessions, nb places, spectateur) et retourne un objet "détail du prix" (sous-total, remises appliquées, total). Incrémenter une règle à la fois :</p>
+                        <ul class="list-disc list-inside ml-2 space-y-0.5">
+                            <li><strong>C.1</strong> — Prix de base (règles 1 + 2) : <code class="code-font">prix_tribune × multiplicateur_session × nb_places</code>, sommé sur toutes les sessions</li>
+                            <li><strong>C.2</strong> — Pass weekend (règle 3) : −20% si FRIDAY + SATURDAY + SUNDAY</li>
+                            <li><strong>C.3</strong> — Fidélité (règle 4) : −5% SILVER / −10% GOLD, cumulable après le pass weekend</li>
+                            <li><strong>C.4</strong> — Tarif jeune (règle 5) : −50% si &lt; 16 ans</li>
+                            <li><strong>C.5</strong> — Endpoint <code class="code-font">POST /reservations/quote</code> : exposer le service via l'API</li>
+                        </ul>
+                        <p><strong>À tester :</strong> un test unitaire <em>par règle</em> (nommé explicitement, ex : <code class="code-font">applyWeekendPassDiscount_when3DaysSameGrandstand</code>) + un ou deux tests combinatoires (pass weekend + GOLD, jeune + fidélité).</p>
+                        <p class="italic text-slate-500"><i class="fa-solid fa-arrow-right mr-1"></i>Pourquoi maintenant : ce service est <strong>une fonction pure</strong> — zéro dépendance à la persistance — donc testable à 100% en isolation. C'est aussi le morceau le plus susceptible de générer de la complexité cyclomatique : le faire en premier et le garder propre évite qu'il devienne une god function.</p>
+                    </div>
+                </div>
+
+                <!-- Phase D -->
+                <div class="border-l-4 border-purple-500 pl-4 mb-4">
+                    <h4 class="font-bold text-slate-800 text-sm">
+                        <span class="inline-block bg-purple-200 text-purple-900 text-xs px-2 py-0.5 rounded font-bold mr-2">D</span>
+                        Réservation (feature 6)
+                    </h4>
+                    <div class="text-xs text-slate-700 mt-1 space-y-1">
+                        <p><strong>Ce que vous faites :</strong> <code class="code-font">POST /reservations</code> qui enchaîne les vérifications dans cet ordre :</p>
+                        <ol class="list-decimal list-inside ml-2 space-y-0.5">
+                            <li>Validation des entrées (existence du spectateur, de la tribune, des sessions)</li>
+                            <li>Max 6 places (règle 6)</li>
+                            <li>Disponibilité sur chaque session (règle 7) — helper "places restantes sur tribune × session"</li>
+                            <li>Appel au moteur de prix de la phase C</li>
+                            <li>Persistance + retour de la réservation créée</li>
+                        </ol>
+                        <p><strong>À tester :</strong> un test de refus par règle d'éligibilité (400/409 attendus) + un happy path qui crée une réservation et vérifie que le prix correspond au quote.</p>
+                        <p class="italic text-slate-500"><i class="fa-solid fa-arrow-right mr-1"></i>Pourquoi maintenant : nécessite le moteur de prix (phase C) et le CRUD entités (phase B). Aucune raison de coder ça avant.</p>
+                    </div>
+                </div>
+
+                <!-- Phase E -->
+                <div class="border-l-4 border-purple-400 pl-4 mb-4">
+                    <h4 class="font-bold text-slate-800 text-sm">
+                        <span class="inline-block bg-purple-100 text-purple-900 text-xs px-2 py-0.5 rounded font-bold mr-2">E</span>
+                        Annulation (feature 7)
+                    </h4>
+                    <div class="text-xs text-slate-700 mt-1 space-y-1">
+                        <p><strong>Ce que vous faites :</strong></p>
+                        <ul class="list-disc list-inside ml-2 space-y-0.5">
+                            <li><strong>E.1</strong> — Service isolé "calcul du remboursement" (règle 8) qui prend la date de la première session et la date du jour, retourne le taux (100% / 0%) et le montant</li>
+                            <li><strong>E.2</strong> — <code class="code-font">POST /reservations/{id}/cancel</code> : passer le statut à CANCELLED, enregistrer le montant remboursé, libérer les places sur les sessions concernées</li>
+                        </ul>
+                        <p><strong>À tester :</strong> les 2 paliers temporels (J−15 et J−3), le refus de double-annulation, la libération effective des places (rejouer une réservation après annulation doit marcher).</p>
+                        <p class="italic text-slate-500"><i class="fa-solid fa-arrow-right mr-1"></i>Pourquoi maintenant : besoin de réservations CONFIRMED existantes pour pouvoir les annuler. Service de remboursement isolé pour les mêmes raisons que le moteur de prix : fonction pure, facile à tester.</p>
+                    </div>
+                </div>
+
+                <div class="box-tip p-3 rounded-lg text-xs">
+                    <strong>Rescannez Sonar régulièrement</strong> (typiquement après chaque phase A → E, ou plus souvent si vous en sentez le besoin). Si le Quality Gate tombe en Failed, arrêtez d'avancer et corrigez avant de passer à la phase suivante.
+                </div>
+            </div>
+
+            <!-- Étape 3 -->
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6 mb-6">
+                <h3 class="text-lg font-bold text-slate-800 mb-2">
+                    <span class="inline-block bg-emerald-600 text-white text-xs px-2 py-1 rounded mr-2">Étape 3</span>
+                    Finalisation : couverture, polissage, vérif fonctionnelle
+                </h3>
+                <ul class="text-sm text-slate-700 list-disc list-inside space-y-1 mt-3">
+                    <li>Compléter les tests manquants pour atteindre <strong>≥ 80% de couverture</strong> sur le code produit.</li>
+                    <li>Traiter les Security Hotspots restants (les marquer "reviewed" si justifié, ou les corriger).</li>
+                    <li>Dernier scan : viser <strong>Quality Gate Passed</strong> définitif.</li>
+                    <li>Recette manuelle : exécuter un scénario de bout en bout (créer une tribune GOLD + 3 sessions du weekend, inscrire un spectateur SILVER, simuler le prix d'un pass weekend, créer la réservation, l'annuler à J−15 et vérifier le remboursement à 50%) et noter le résultat.</li>
+                </ul>
+            </div>
+
+            <!-- Étape 4 -->
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6 mb-6">
+                <h3 class="text-lg font-bold text-slate-800 mb-2">
+                    <span class="inline-block bg-orange-500 text-white text-xs px-2 py-1 rounded mr-2">Étape 4</span>
+                    Rapport final
+                </h3>
+                <ul class="text-sm text-slate-700 list-disc list-inside space-y-1 mt-3">
+                    <li>Finaliser le rapport (cf. section Livrables).</li>
+                    <li>Capturer les écrans Sonar finaux (Overview, Measures, Quality Gate Passed).</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- LIVRABLES                                                     -->
+        <!-- ============================================================ -->
+        <section id="livrables" class="scroll-mt-32 border-t pt-10">
+            <div class="flex items-center mb-6">
+                <span class="section-badge bg-violet-600"><i class="fa-solid fa-box-archive"></i></span>
+                <h2 class="text-3xl font-bold text-slate-800">Livrables</h2>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200 mb-6">
+                <p class="text-sm text-slate-600 mb-4">À déposer dans une archive ZIP nommée
+                    <code class="code-font bg-slate-100 px-1 rounded">MSPR_QG_NOM1-NOM2.zip</code> contenant&nbsp;:</p>
+                <ol class="text-sm text-slate-800 space-y-3 list-decimal list-inside">
+                    <li><strong>Code source complet</strong> du projet (sources, tests, fichier de build, README de démarrage).</li>
+                    <li><strong>Historique Git</strong> — sortie de
+                        <code class="code-font bg-slate-100 px-1 rounded">git log --oneline --decorate</code>
+                        dans un fichier <code class="code-font">git-log.txt</code>.
+                        L'historique doit être suffisamment cohérent pour pouvoir rejouer plusieurs scans Sonar à différents moments du projet et constater l'évolution du Quality Gate.</li>
+                    <li><strong>Rapport (format libre)</strong> structuré ainsi :
+                        <ul class="ml-6 mt-1 list-disc text-slate-700 space-y-1">
+                            <li>Page de garde : noms du binôme, date, stack choisie, lien dépôt.</li>
+                            <li>§1 Architecture du projet — schéma simple (couches + entités) et justification du découpage.</li>
+                            <li>§2 Implémentation des règles métier — un mini-tableau "règle → où dans le code → tests qui la couvrent".</li>
+                            <li>§3 Métriques Sonar finales — captures du dashboard + tableau (LOC, Coverage, Duplications, Complexity, Quality Gate).</li>
+                            <li>§4 Historique qualité — au moins 3 captures du Quality Gate prises à différents moments du projet (début, milieu, fin) montrant l'évolution.</li>
+                            <li>§5 Recette manuelle — scénario de bout en bout joué + résultats.</li>
+                            <li>§6 Bilan critique — difficultés rencontrées, règles Sonar contestables, ce que vous referiez autrement.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Captures Sonar</strong> du dashboard final, au minimum : Overview avec badge Passed, Measures (Coverage + Duplications + Complexity), Issues (idéalement vide).</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- BARÈME                                                        -->
+        <!-- ============================================================ -->
+        <section id="bareme" class="scroll-mt-32 border-t pt-10">
+            <div class="flex items-center mb-6">
+                <span class="section-badge bg-orange-500"><i class="fa-solid fa-scale-balanced"></i></span>
+                <h2 class="text-3xl font-bold text-slate-800">Barème — /20</h2>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-slate-100">
+                        <tr>
+                            <th class="p-3 border border-slate-200 text-left">Critère</th>
+                            <th class="p-3 border border-slate-200 text-center w-20">Points</th>
+                            <th class="p-3 border border-slate-200 text-left">Sur quoi vous êtes évalués</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-slate-700">
+                        <tr>
+                            <td class="p-3 border border-slate-200 font-semibold align-top">Quality Gate Sonar Way</td>
+                            <td class="p-3 border border-slate-200 text-center font-bold align-top">5</td>
+                            <td class="p-3 border border-slate-200 align-top">coverage, duplication, vulnérabilité</td>
+                        </tr>
+                        <tr class="bg-slate-50">
+                            <td class="p-3 border border-slate-200 font-semibold align-top">Complétude fonctionnelle</td>
+                            <td class="p-3 border border-slate-200 text-center font-bold align-top">5</td>
+                            <td class="p-3 border border-slate-200 align-top">Les 7 fonctionnalités du cahier des charges implémentées + les 9 règles métier appliquées correctement.</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200 font-semibold align-top">Qualité du design</td>
+                            <td class="p-3 border border-slate-200 text-center font-bold align-top">3</td>
+                            <td class="p-3 border border-slate-200 align-top">Séparation des couches (controller/service/repository), nommage clair, complexité cyclomatique.</td>
+                        </tr>
+                        <tr class="bg-slate-50">
+                            <td class="p-3 border border-slate-200 font-semibold align-top">Tests &amp; coverage</td>
+                            <td class="p-3 border border-slate-200 text-center font-bold align-top">3</td>
+                            <td class="p-3 border border-slate-200 align-top">≥ 80% (cible Sonar Way), tests pertinents. Chaque règle métier couverte par au moins un test nommé explicitement.</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-slate-200 font-semibold align-top">Hygiène Git</td>
+                            <td class="p-3 border border-slate-200 text-center font-bold align-top">2</td>
+                            <td class="p-3 border border-slate-200 align-top">Historique cohérent permettant de rejouer plusieurs scans Sonar, messages de commit clairs.</td>
+                        </tr>
+                        <tr class="bg-slate-50">
+                            <td class="p-3 border border-slate-200 font-semibold align-top">Rapport</td>
+                            <td class="p-3 border border-slate-200 text-center font-bold align-top">2</td>
+                            <td class="p-3 border border-slate-200 align-top">Structure respectée, captures lisibles, bilan critique pertinent.</td>
+                        </tr>
+                    </tbody>
+                    <tfoot class="bg-slate-900 text-white font-bold">
+                        <tr>
+                            <td class="p-3 border border-slate-700 text-right">TOTAL</td>
+                            <td class="p-3 border border-slate-700 text-center">20</td>
+                            <td class="p-3 border border-slate-700"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- POUR ALLER PLUS LOIN                                          -->
+        <!-- ============================================================ -->
+        <section id="bonus" class="scroll-mt-32 border-t pt-10">
+            <div class="flex items-center mb-6">
+                <span class="section-badge bg-yellow-500"><i class="fa-solid fa-star"></i></span>
+                <h2 class="text-3xl font-bold text-slate-800">Pour aller plus loin <span class="text-sm font-normal text-slate-500">— bonus optionnels, non notés</span></h2>
+            </div>
+
+            <div class="box-tip p-5 rounded-xl shadow-sm mb-6">
+                <p class="text-sm text-cyan-900">
+                    Ces pistes ne rapportent pas de points au barème, mais sont bienvenues si vous avez le temps —
+                    et particulièrement pertinentes à mentionner dans le <strong>§6 du rapport (bilan critique)</strong>.
+                    Elles prolongent naturellement la démarche "Clean as You Code" en automatisant la discipline.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <div class="bg-white rounded-xl shadow border border-gray-200 p-5">
+                    <h4 class="font-bold text-slate-800 mb-2"><i class="fa-solid fa-code-commit mr-2 text-yellow-600"></i>Conventional Commits + commitlint</h4>
+                    <p class="text-sm text-slate-700 mb-2">
+                        Imposez automatiquement la convention <code class="code-font bg-slate-100 px-1 rounded">type(scope): message</code>
+                        sur tous vos commits — un hook bloque les messages mal formés avant qu'ils n'entrent dans l'historique.
+                    </p>
+                    <p class="text-xs text-slate-500">
+                        Stack : <code class="code-font">@commitlint/cli</code> + <code class="code-font">@commitlint/config-conventional</code> + <code class="code-font">husky</code> (Node — fonctionne aussi pour piloter des projets non-Node).
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow border border-gray-200 p-5">
+                    <h4 class="font-bold text-slate-800 mb-2"><i class="fa-solid fa-broom mr-2 text-yellow-600"></i>Pre-commit hook qualité</h4>
+                    <p class="text-sm text-slate-700 mb-2">
+                        Lancez automatiquement le linter (ou le formateur de code) et les tests <strong>avant</strong> chaque commit.
+                        Si quelque chose échoue, le commit est bloqué — vous ne pouvez plus pousser de la dette technique par inadvertance.
+                    </p>
+                    <p class="text-xs text-slate-500">
+                        Stack : <code class="code-font">husky</code> (JS/TS), <code class="code-font">pre-commit</code> (Python), <code class="code-font">lefthook</code> (multi-langage).
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- ANNEXE                                                        -->
+        <!-- ============================================================ -->
+        <section id="annexe" class="scroll-mt-32 border-t pt-10">
+            <div class="flex items-center mb-6">
+                <span class="section-badge bg-slate-600"><i class="fa-solid fa-book"></i></span>
+                <h2 class="text-3xl font-bold text-slate-800">Annexe — Quality Gate Sonar Way</h2>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200 mb-6">
+                <p class="text-sm text-slate-600 mb-4">Conditions appliquées <strong>sur le code nouveau</strong> (cf. setup) :</p>
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-slate-100">
+                        <tr>
+                            <th class="p-2 border border-slate-200 text-left">Métrique</th>
+                            <th class="p-2 border border-slate-200">Condition</th>
+                            <th class="p-2 border border-slate-200">Seuil</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-slate-700">
+                        <tr><td class="p-2 border border-slate-200">New Issues</td><td class="p-2 border border-slate-200 text-center">est supérieur à</td><td class="p-2 border border-slate-200 text-center font-bold">0</td></tr>
+                        <tr class="bg-slate-50"><td class="p-2 border border-slate-200">Security Hotspots Reviewed</td><td class="p-2 border border-slate-200 text-center">est inférieur à</td><td class="p-2 border border-slate-200 text-center font-bold">100%</td></tr>
+                        <tr><td class="p-2 border border-slate-200">Coverage on New Code</td><td class="p-2 border border-slate-200 text-center">est inférieur à</td><td class="p-2 border border-slate-200 text-center font-bold">80%</td></tr>
+                        <tr class="bg-slate-50"><td class="p-2 border border-slate-200">Duplicated Lines on New Code</td><td class="p-2 border border-slate-200 text-center">est supérieur à</td><td class="p-2 border border-slate-200 text-center font-bold">3%</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 py-8 mt-20 border-t border-slate-800">
+        <div class="max-w-5xl mx-auto px-4 text-center">
+            <p class="text-sm">MSPR — Analyse de code &amp; Maintenabilité I1</p>
+            <p class="text-xs mt-2">© 2025-2026 — Support Pédagogique EPSI</p>
+        </div>
+    </footer>
+
+</body>
+
+</html>
