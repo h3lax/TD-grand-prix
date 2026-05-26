@@ -1,0 +1,15 @@
+# Dependencies
+backend/node_modules/
+
+# Build output
+backend/dist/
+
+# Coverage reports
+backend/coverage/
+
+# SonarQube local cache
+.sonar/
+
+# OS
+.DS_Store
+Thumbs.db
