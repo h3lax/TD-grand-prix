@@ -1,10 +1,23 @@
 import { Reservation, ReservationStatus } from '../entities/Reservation';
 import { HttpError } from '../helpers/HttpError';
-import { countConfirmedSeats, insertReservation } from '../repositories/reservationRepository';
+import {
+  cancelReservation as persistCancellation,
+  countConfirmedSeats,
+  findReservationById,
+  insertReservation,
+} from '../repositories/reservationRepository';
 import { findGrandstandById } from '../repositories/grandstandRepository';
 import { findSessionById } from '../repositories/sessionRepository';
 import { findSpectatorById } from '../repositories/spectatorRepository';
 import { calculatePrice } from './PricingService';
+import { calculateRefund, RefundDetail } from './RefundService';
+
+export interface CancelResult {
+  reservation: Reservation;
+  refund: number;
+  rate: RefundDetail['rate'];
+  daysUntilFirstSession: number;
+}
 
 export function createReservation(body: Record<string, unknown>): Reservation {
   const { spectatorId, grandstandId, sessionIds, seatCount } = body;
@@ -57,4 +70,24 @@ export function createReservation(body: Record<string, unknown>): Reservation {
     cancelledAt: null,
     refundedAmount: 0,
   });
+}
+
+export function cancelReservationById(id: number): CancelResult {
+  const reservation = findReservationById(id);
+  if (!reservation) throw new HttpError(404, `Reservation ${id} not found`);
+  if (reservation.status === ReservationStatus.CANCELLED) {
+    throw new HttpError(409, 'Reservation is already cancelled');
+  }
+
+  const sessions = reservation.sessionIds.map((sid) => findSessionById(sid)!);
+  const firstSession = sessions.toSorted((a, b) => a.date.localeCompare(b.date))[0];
+
+  const { rate, refundedAmount, daysUntilFirstSession } = calculateRefund(
+    new Date(firstSession.date),
+    reservation.totalPrice,
+  );
+
+  const updated = persistCancellation(id, new Date().toISOString(), refundedAmount);
+
+  return { reservation: updated, refund: refundedAmount, rate, daysUntilFirstSession };
 }
