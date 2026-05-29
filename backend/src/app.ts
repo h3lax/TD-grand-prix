@@ -1,6 +1,7 @@
 import express, { NextFunction, Request, Response } from 'express';
 import { HttpError } from './helpers/HttpError';
 import { grandstandRoutes } from './routes/grandstandRoutes';
+import { reservationRoutes } from './routes/reservationRoutes';
 import { sessionRoutes } from './routes/sessionRoutes';
 import { spectatorRoutes } from './routes/spectatorRoutes';
 
@@ -10,6 +11,7 @@ app.use(express.json());
 app.use('/grandstands', grandstandRoutes);
 app.use('/sessions', sessionRoutes);
 app.use('/spectators', spectatorRoutes);
+app.use('/reservations', reservationRoutes);
 
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   if (err instanceof HttpError) {
