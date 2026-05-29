@@ -7,6 +7,9 @@ backend/dist/
 # Coverage reports
 backend/coverage/
 
+# Secrets
+.env
+
 # SonarQube local cache
 .sonar/
 
