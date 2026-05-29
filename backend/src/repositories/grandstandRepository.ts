@@ -30,11 +30,22 @@ export function insertGrandstand(data: Omit<Grandstand, 'id'>): Grandstand {
   return { ...data, id: result.lastInsertRowid as number };
 }
 
-export function findAllGrandstands(category?: Category): Grandstand[] {
-  if (category) {
-    return (getDb().prepare('SELECT * FROM grandstands WHERE category = ?').all(category) as GrandstandRow[]).map(toGrandstand);
+// Cleanest way I found to build the filter dynamically, open to insights
+export function findAllGrandstands(category?: Category, covered?: boolean): Grandstand[] {
+  const conditions: string[] = [];
+  const params: unknown[] = [];
+
+  if (category !== undefined) {
+    conditions.push('category = ?');
+    params.push(category);
   }
-  return (getDb().prepare('SELECT * FROM grandstands').all() as GrandstandRow[]).map(toGrandstand);
+  if (covered !== undefined) {
+    conditions.push('covered = ?');
+    params.push(covered ? 1 : 0);
+  }
+
+  const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+  return (getDb().prepare(`SELECT * FROM grandstands ${where}`).all(...params) as GrandstandRow[]).map(toGrandstand);
 }
 
 export function findGrandstandById(id: number): Grandstand | undefined {
